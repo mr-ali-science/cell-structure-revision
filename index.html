@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cell Structure Revision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday revision for 11–13 year olds: clear, calm, readable (Lexend), a game but not childish
+   IDEA a stained microscope slide: histology purple and eosin pink, the cell drawn like a test diagram
+   PICTURE each tab is one big working diagram (cell, route, membrane, live membrane) with labels to drag onto it
+   COLOUR white slide ground, hematoxylin purple band and nucleus, eosin pink cytoplasm, green only for correct and chloroplasts
+   TYPE Lexend 700 titles, Lexend 400 text
+   LAYOUT top bar with six tabs; each tab fits one iPad screen: diagram left, card bank right (landscape) or below (portrait) */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#100d17);--ink:light-dark(#1c1530,#ece8f5);--muted:light-dark(#5b5470,#aaa2bf);--panel:light-dark(#f5f2fa,#1a1626);--line:light-dark(#d9d2e6,#342c47);--band:light-dark(#3b2a6b,#241944);--purple:light-dark(#5b3fa6,#a990ef);--pink:light-dark(#d23f78,#ff7aa8);--ok:light-dark(#137a45,#4fd08c);--bad:light-dark(#c62828,#ff6b6b);--wall:light-dark(#fbfaff,#14111d);--cyto:light-dark(#fde8ef,#3a2232);--memb:light-dark(#b0306a,#ff86b3);--nuc:light-dark(#d9ccf3,#3b2f5c);--nuc2:light-dark(#5b3fa6,#a990ef);--er:light-dark(#c98bd9,#9b5fb0);--gol:light-dark(#f0a35e,#c77a35);--mito:light-dark(#ef8a5a,#d06a3c);--lyso:light-dark(#8fb3e8,#4f78b8);--vac:light-dark(#cfe6f7,#24425a);--chl:light-dark(#4caf50,#3d9440);--cw:light-dark(#d7e6b5,#3c4a26);--ribo:light-dark(#4a2f80,#d9c8ff);--lip:light-dark(#e9a3c0,#c25d89);--head:light-dark(#6b4fc0,#b9a2ff);--tail:light-dark(#e5b65a,#c8963c);--prot:light-dark(#5aa9a0,#3f8a82);--chol:light-dark(#f2c230,#d9a91c);--sug:light-dark(#3f8fd9,#6fb2f0)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 Lexend,system-ui,sans-serif;overflow-x:clip;-webkit-text-size-adjust:100%}
+h2,h3{font-weight:700;line-height:1.1;letter-spacing:-.02em;margin:0}
+h2{font-size:21px}
+h3{font-size:16px;font-weight:600;margin:0 0 6px}
+p{margin:0 0 8px}
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
+.top{background:var(--band);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px max(12px,env(safe-area-inset-left,0px)) 8px max(12px,env(safe-area-inset-right,0px))}
+.top h1{font-size:18px;margin:0 4px 0 0;white-space:nowrap}
+@media(max-width:1100px){.top h1{display:none}}
+.tabs{display:flex;gap:3px;flex-wrap:wrap}
+.tabs button{background:transparent;color:#e3dcf5;border:0;border-radius:8px;min-height:40px;padding:6px 8px;font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected=true]{background:#fff;color:var(--band)}
+.tabs button .st{color:#7be0a6;font-weight:700}
+.tabs button[aria-selected=true] .st{color:var(--ok)}
+.view{padding:10px max(12px,env(safe-area-inset-left,0px)) 10px max(12px,env(safe-area-inset-right,0px));overflow:auto}
+.view[hidden]{display:none!important}
+.split{display:grid;gap:12px;grid-template-columns:minmax(0,1fr) 300px;height:100%}
+.main{display:flex;flex-direction:column;gap:8px;min-height:0}
+.side{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.head p{margin:0;color:var(--muted);font-size:14px}
+.figbox{flex:1 1 auto;min-height:220px;display:flex;align-items:center;justify-content:center}
+.fit{position:relative}
+.fit>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fit svg text{font-family:Lexend,sans-serif}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.bank{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;min-height:56px}
+.chip{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;background:var(--bg);border:2px solid var(--purple);color:var(--ink);border-radius:9px;padding:6px 10px;font-size:14px;line-height:1.2;font-weight:500;box-shadow:0 1px 0 var(--line)}
+.chip.sel{background:var(--purple);color:var(--bg)}
+.chip.fn{font-weight:400;font-size:14px;width:100%}
+#bank2 .chip{font-weight:400;max-width:calc(50% - 3px)}
+.rstep .mslot .chip{font-weight:400}
+.chip.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--bg));cursor:default}
+.chip.ok::after{content:" ✓";color:var(--ok);font-weight:700}
+.chip.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--bg))}
+.chip.no::after{content:" ✗";color:var(--bad);font-weight:700}
+.ghost{position:fixed;z-index:50;pointer-events:none;opacity:.92;box-shadow:0 8px 24px rgba(0,0,0,.25);transform:translate(-50%,-50%) scale(1.04)}
+.slot{position:absolute;border:2px dashed var(--purple);border-radius:9px;background:color-mix(in srgb,var(--bg) 85%,transparent);display:flex;align-items:center;justify-content:center;padding:1px}
+.slot.hot{background:color-mix(in srgb,var(--purple) 18%,var(--bg));border-style:solid}
+.slot .chip{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px 4px;font-size:13px;line-height:1.05;border-width:2px}
+.slot:empty::before{content:attr(data-n);color:var(--muted);font-size:13px;font-weight:600}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button.b{font:inherit;font-size:15px;min-height:44px;padding:6px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.b:hover{border-color:var(--purple)}
+button.go{background:var(--purple);border-color:var(--purple);color:var(--bg);font-weight:600}
+button:focus-visible,.chip:focus-visible,.seg input:focus-visible+label{outline:3px solid var(--pink);outline-offset:2px}
+.fb{font-weight:500;font-size:15px;min-height:22px;margin:0}
+.fb.good{color:var(--ok)}.fb.try{color:var(--bad)}
+.seg{display:flex;position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 10px;border:1px solid var(--line);background:var(--bg);margin-left:-1px;cursor:pointer;font-size:15px;white-space:nowrap}
+.seg label:first-of-type{border-radius:10px 0 0 10px;margin-left:0}
+.seg label:last-of-type{border-radius:0 10px 10px 0}
+.seg input:checked+label{background:var(--purple);border-color:var(--purple);color:var(--bg);position:relative}
+/* matching tables */
+.rows{display:grid;gap:6px;align-content:start}
+.mrow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px;align-items:stretch}
+.mrow .nm{display:flex;align-items:center;font-weight:600;font-size:15px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+.mrow .nm i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;flex:none;border:1px solid rgba(0,0,0,.2)}
+.mslot{position:relative;min-height:50px;border:2px dashed var(--purple);border-radius:9px;display:flex;align-items:stretch}
+.mslot.hot{background:color-mix(in srgb,var(--purple) 15%,var(--bg));border-style:solid}
+.mslot:empty::before{content:"Drop the job here";color:var(--muted);font-size:13px;margin:auto}
+.mslot .chip{width:100%;border:0;border-radius:7px;display:flex;align-items:center}
+/* protein route */
+.route{display:grid;gap:6px}
+.rstep{display:grid;grid-template-columns:34px minmax(0,1fr);gap:6px;align-items:stretch}
+.rstep b{display:flex;align-items:center;justify-content:center;background:var(--band);color:#fff;border-radius:9px;font-size:16px}
+.rstep .mslot{min-height:46px}
+.rstep .mslot:empty::before{content:"Drop a step here"}
+.simctl{display:flex;flex-direction:column;gap:6px}
+.simctl[hidden]{display:none}
+#simCap{margin:0;font-size:15px;min-height:44px}
+#simCap b{color:var(--pink)}
+.rstep.now .mslot,.start.now{outline:3px solid var(--pink);outline-offset:2px}
+.start{font-size:14px;background:color-mix(in srgb,var(--nuc) 60%,var(--bg));border-radius:9px;padding:8px 10px}
+/* quiz */
+.q{font-size:15px}
+.opts{display:grid;gap:5px;margin-top:6px}
+.opts button{text-align:left;font:inherit;font-size:14px;min-height:42px;padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opts button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--bg))}
+.opts button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--bg))}
+/* cholesterol lab */
+.labfig{position:relative;flex:1 1 auto;min-height:240px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--wall);touch-action:none}
+.labfig canvas{position:absolute;inset:0;width:100%;height:100%}
+.meter{position:relative;height:18px;border-radius:9px;overflow:hidden;display:flex;margin:6px 0 2px}
+.meter span{height:100%}
+.meter i{position:absolute;top:-3px;width:6px;height:24px;border-radius:3px;background:var(--ink);transform:translateX(-3px);transition:left .3s}
+.mlab{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.cnt{display:flex;align-items:center;gap:8px}
+.cnt b{font-size:22px;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
+.tray{touch-action:none;cursor:grab;display:flex;align-items:center;gap:8px;border:2px dashed var(--chol);border-radius:10px;padding:6px 10px;font-size:14px;min-height:44px;user-select:none;-webkit-user-select:none}
+.tray svg{width:34px;height:22px;flex:none}
+#cStatus{font-weight:500;font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel)}
+#cStatus.bad{border-color:var(--bad);color:var(--bad)}#cStatus.ok{border-color:var(--ok);color:var(--ok)}#cStatus.warn{border-color:#c77a00;color:light-dark(#9a5d00,#ffb347)}
+.note{font-size:13px;color:var(--muted);margin:0}
+@media(max-width:899px){
+ .side .bank .chip.fn{width:calc(50% - 3px)}
+ .split.match{grid-template-rows:auto auto;align-content:start}
+ .lab-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"chol quiz" "temp quiz" "meter quiz";align-content:start}
+ .split{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+ .side{overflow:visible}
+ .bank{max-height:none}
+}
+@media(max-width:599px),(max-height:520px){
+ .lab-side{grid-template-columns:1fr;grid-template-areas:"chol" "temp" "meter" "quiz"}
+ .split{height:auto;grid-template-rows:auto auto}
+ .figbox{min-height:0}
+ .main{min-height:auto}
+ .mrow{grid-template-columns:1fr}
+ .labfig{flex:none;height:360px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <h1>Cell structure revision</h1>
+ <nav class="tabs" role="tablist" id="tabs"></nav>
+</header>
+
+<!-- 1 label the cell -->
+<section class="view" id="v0" role="tabpanel">
+ <div class="split">
+  <div class="main">
+   <div class="head"><h2>Label the cell</h2>
+    <div class="seg" role="radiogroup" aria-label="Cell type"><input type="radio" name="ct" id="ctA" value="animal" checked><label for="ctA">Animal cell</label><input type="radio" name="ct" id="ctP" value="plant"><label for="ctP">Plant cell</label></div>
+   </div>
+   <div class="figbox"><div class="fit" id="cellFig" data-w="1000" data-h="620"><svg id="cellSvg" viewBox="0 0 1000 620" aria-label="Cell diagram with empty label boxes"></svg></div></div>
+  </div>
+  <div class="side">
+   <div class="panel"><h3>Drag each label to a box</h3><p class="note" style="margin-bottom:6px">Or tap a label, then tap a box.</p><div class="bank" id="bank0"></div></div>
+   <div class="btns"><button class="b go" id="chk0">Check my labels</button><button class="b" id="rst0">Start again</button></div>
+   <p class="fb" id="fb0" role="status"></p>
+  </div>
+ </div>
+</section>
+
+<!-- 2 organelle jobs -->
+<section class="view" id="v1" role="tabpanel" hidden>
+ <div class="split match">
+  <div class="main">
+   <div class="head"><h2>What does each organelle do?</h2>
+    <div class="seg" role="radiogroup" aria-label="Round"><input type="radio" name="jr" id="jr0" value="0" checked><label for="jr0">Round 1</label><input type="radio" name="jr" id="jr1" value="1"><label for="jr1">Round 2</label><input type="radio" name="jr" id="jr2" value="2"><label for="jr2">Plant parts</label></div>
+   </div>
+   <div class="rows" id="rows1"></div>
+  </div>
+  <div class="side">
+   <div class="panel"><h3>Drag each job to its organelle</h3><div class="bank" id="bank1"></div></div>
+   <div class="btns"><button class="b go" id="chk1">Check my answers</button><button class="b" id="rst1">Start again</button></div>
+   <p class="fb" id="fb1" role="status"></p>
+  </div>
+ </div>
+</section>
+
+<!-- 3 protein production -->
+<section class="view" id="v2" role="tabpanel" hidden>
+ <div class="split">
+  <div class="main">
+   <div class="head"><h2>Make a protein and send it out</h2><p>Put the 7 steps in order: from the instructions in the nucleus to where the protein leaves the cell.</p></div>
+   <div class="figbox"><div class="fit" id="routeFig" data-w="720" data-h="470"><svg id="routeSvg" viewBox="0 0 720 470" aria-label="Part of a cell showing nucleus, ribosomes on rough ER, vesicles, Golgi body and cell membrane"></svg></div></div>
+   <div class="panel" style="padding:8px" id="bankPanel2"><div class="bank" id="bank2"></div></div>
+   <div class="panel simctl" id="simCtl" hidden>
+    <p id="simCap" aria-live="polite"></p>
+    <div class="btns"><button class="b" id="simBack">◀ Back</button><button class="b go" id="simPlay">Pause</button><button class="b" id="simNext">Next ▶</button><button class="b" id="simReplay">Replay</button></div>
+   </div>
+  </div>
+  <div class="side">
+   <div class="route" id="route"></div>
+   <div class="btns"><button class="b go" id="chk2">Check my order</button><button class="b" id="rst2">Start again</button></div>
+   <p class="fb" id="fb2" role="status"></p>
+  </div>
+ </div>
+</section>
+
+<!-- 4 label the membrane -->
+<section class="view" id="v3" role="tabpanel" hidden>
+ <div class="split">
+  <div class="main">
+   <div class="head"><h2>Label the cell membrane</h2><p>The fluid mosaic model: many parts working together.</p></div>
+   <div class="figbox"><div class="fit" id="memFig" data-w="1000" data-h="620"><svg id="memSvg" viewBox="0 0 1000 620" aria-label="Cell membrane cross-section with empty label boxes"></svg></div></div>
+  </div>
+  <div class="side">
+   <div class="panel"><h3>Drag each label to a box</h3><p class="note" style="margin-bottom:6px">Or tap a label, then tap a box.</p><div class="bank" id="bank3"></div></div>
+   <div class="btns"><button class="b go" id="chk3">Check my labels</button><button class="b" id="rst3">Start again</button></div>
+   <p class="fb" id="fb3" role="status"></p>
+  </div>
+ </div>
+</section>
+
+<!-- 5 membrane jobs -->
+<section class="view" id="v4" role="tabpanel" hidden>
+ <div class="split match">
+  <div class="main">
+   <div class="head"><h2>What does each part of the membrane do?</h2></div>
+   <div class="rows" id="rows4"></div>
+  </div>
+  <div class="side">
+   <div class="panel"><h3>Drag each job to its part</h3><div class="bank" id="bank4"></div></div>
+   <div class="btns"><button class="b go" id="chk4">Check my answers</button><button class="b" id="rst4">Start again</button></div>
+   <p class="fb" id="fb4" role="status"></p>
+  </div>
+ </div>
+</section>
+
+<!-- 6 cholesterol lab -->
+<section class="view" id="v5" role="tabpanel" hidden>
+ <div class="split">
+  <div class="main">
+   <div class="head"><h2>Cholesterol lab</h2><p>Add cholesterol, then drag the membrane up or down to bend it.</p></div>
+   <div class="labfig" id="labfig"><canvas id="cv" aria-label="Moving cell membrane. Drag up or down on it to bend it."></canvas></div>
+   <div id="cStatus" role="status"></div>
+  </div>
+  <div class="side lab-side">
+   <div class="panel" style="grid-area:chol">
+    <h3>Cholesterol in the membrane</h3>
+    <div class="cnt"><button class="b" id="cMinus" aria-label="Remove one cholesterol">−</button><b id="cNum">0</b><button class="b" id="cPlus" aria-label="Add one cholesterol">+</button>
+     <div class="tray" id="tray" aria-label="Drag a cholesterol molecule into the membrane"><svg viewBox="0 0 34 22"><g fill="var(--chol)" stroke="#8a6a00" stroke-width="1.2"><polygon points="4,11 8,4 15,4 18,11 15,18 8,18"/><polygon points="18,11 22,4 29,4 32,11 29,18 22,18"/></g></svg>Drag me in</div>
+    </div>
+   </div>
+   <div class="panel" style="grid-area:temp">
+    <h3>Temperature</h3>
+    <div class="seg" role="radiogroup" aria-label="Temperature"><input type="radio" name="tp" id="tpC" value="cold"><label for="tpC">Cold</label><input type="radio" name="tp" id="tpB" value="body" checked><label for="tpB">Body 37 °C</label><input type="radio" name="tp" id="tpH" value="hot"><label for="tpH">Hot</label></div>
+   </div>
+   <div class="panel" style="grid-area:meter">
+    <h3>How fluid is it?</h3>
+    <div class="meter" id="meter"><span style="flex:16;background:#5f78b0"></span><span style="flex:15;background:#9db7de"></span><span style="flex:34;background:#4fbf7d"></span><span style="flex:16;background:#f0a34a"></span><span style="flex:19;background:#d9534f"></span><i id="mk"></i></div>
+    <div class="mlab"><span>Too stiff</span><span>Just right</span><span>Too runny</span></div>
+    <p class="note" style="margin-top:6px">Molecules leaked in: <b id="leak" style="color:var(--ink)">0</b></p>
+   </div>
+   <div class="panel" id="quiz" style="grid-area:quiz"></div>
+  </div>
+ </div>
+</section>
+</div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------------- tabs ---------------- */
+const TABS=['Label the cell','Organelle jobs','Make a protein','Label the membrane','Membrane jobs','Cholesterol lab'];
+const done=[false,false,false,false,false,false];
+function drawTabs(){$('tabs').innerHTML=TABS.map((t,i)=>`<button role="tab" id="t${i}" aria-controls="v${i}" aria-selected="${!$('v'+i).hidden}">${t}${done[i]?' <span class="st">✓</span>':''}</button>`).join('')}
+function showTab(i){for(let k=0;k<6;k++)$('v'+k).hidden=k!==i;drawTabs();fitAll();if(i===5)labStart()}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showTab(+b.id.slice(1))});
+
+/* ---------------- fit diagrams to their box ---------------- */
+function fitAll(){document.querySelectorAll('.fit').forEach(f=>{const box=f.parentElement,W=box.clientWidth,H=box.clientHeight;if(!W||!H)return;const r=f.dataset.w/f.dataset.h;let w=W,h=W/r;if(h>H){h=H;w=H*r}f.style.width=w+'px';f.style.height=h+'px'})}
+const fro=new ResizeObserver(fitAll);document.querySelectorAll('.figbox').forEach(b=>fro.observe(b));
+
+/* ---------------- drag and drop (touch + mouse + tap) ---------------- */
+let drag=null,selected=null;
+function clearSel(){if(selected){selected.classList.remove('sel');selected=null}}
+document.addEventListener('pointerdown',e=>{const c=e.target.closest('.chip');if(!c||c.classList.contains('ok'))return;e.preventDefault();drag={c,x:e.clientX,y:e.clientY,moved:false,g:null,id:e.pointerId}});
+document.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;
+ if(!drag.moved&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6){drag.moved=true;clearSel();const g=drag.c.cloneNode(true);g.classList.add('ghost');g.classList.remove('no');g.style.width=Math.min(drag.c.offsetWidth,280)+'px';document.body.appendChild(g);drag.g=g;drag.c.style.opacity=.35}
+ if(drag.moved){drag.g.style.left=e.clientX+'px';drag.g.style.top=e.clientY+'px';document.querySelectorAll('.hot').forEach(h=>h.classList.remove('hot'));const t=dropTarget(e.clientX,e.clientY,drag.c);if(t&&!t.classList.contains('bank'))t.classList.add('hot')}});
+function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;document.querySelectorAll('.hot').forEach(h=>h.classList.remove('hot'));
+ if(d.moved){d.g.remove();d.c.style.opacity='';const t=dropTarget(e.clientX,e.clientY,d.c);if(t)place(d.c,t)}
+ else{if(selected===d.c)clearSel();else{const inSlot=d.c.parentElement.matches('.slot,.mslot');if(inSlot){toBank(d.c)}else{clearSel();selected=d.c;d.c.classList.add('sel')}}}}
+document.addEventListener('pointerup',endDrag);document.addEventListener('pointercancel',e=>{if(drag&&drag.g){drag.g.remove();drag.c.style.opacity=''}drag=null});
+document.addEventListener('click',e=>{if(!selected)return;const s=e.target.closest('.slot,.mslot');if(s&&s.dataset.grp===selected.dataset.grp){place(selected,s);clearSel()}});
+function dropTarget(x,y,c){const el=document.elementFromPoint(x,y);if(!el)return null;const t=el.closest('.slot,.mslot,.bank');if(!t||t.dataset.grp!==c.dataset.grp)return null;return t}
+function toBank(c){c.classList.remove('no','sel');$(c.dataset.bank).appendChild(c)}
+function place(c,t){if(t.classList.contains('bank')){toBank(c);return}const old=t.querySelector('.chip');if(old&&old!==c){if(old.classList.contains('ok'))return;toBank(old)}c.classList.remove('no','sel');t.appendChild(c)}
+function chipEl(id,text,grp,bank,fn){const c=document.createElement('div');c.className='chip'+(fn?' fn':'');c.dataset.id=id;c.dataset.grp=grp;c.dataset.bank=bank;c.textContent=text;c.tabIndex=0;return c}
+function check(grp,fbId,total,tabIndex,okMsg){
+ const slots=[...document.querySelectorAll(`.slot[data-grp="${grp}"],.mslot[data-grp="${grp}"]`)];let right=0,filled=0;
+ slots.forEach(s=>{const c=s.querySelector('.chip');if(!c)return;filled++;const good=s.dataset.ans.split('|').includes(c.dataset.id);c.classList.toggle('ok',good);c.classList.toggle('no',!good);if(good)right++});
+ const fb=$(fbId);
+ if(right===total){fb.className='fb good';fb.textContent=okMsg||`All ${total} correct. Well done!`;done[tabIndex]=true;drawTabs();return true}
+ fb.className='fb try';fb.textContent=`${right} of ${total} correct.`+(filled<total?` ${total-filled} still empty.`:'')+(filled>right?' Red ones go back to the list: try again.':'');
+ setTimeout(()=>slots.forEach(s=>{const c=s.querySelector('.chip.no');if(c)toBank(c)}),1400);return false;
+}
+
+/* ---------------- 1. label the cell ---------------- */
+const L=(x,y)=>({x,y});
+const CELLS={
+ animal:{L:[['centrioles','Centrioles',110,380,150],['mito','Mitochondria',200,330,245],['lyso','Lysosome',290,355,345],['cyto','Cytoplasm',380,330,420],['ser','Smooth ER',465,430,456],['memb','Cell membrane',550,307,470]],
+         R:[['ribo','Ribosomes',110,650,150],['vac','Vacuole',200,700,240],['nuc','Nucleus',290,578,295],['nucleolus','Nucleolus',380,518,284],['rer','Rough ER',465,608,330],['golgi','Golgi body',550,650,450]]},
+ plant:{L:[['wall','Cell wall',110,257,140],['chl','Chloroplast',200,322,190],['memb','Cell membrane',290,268,300],['vac','Large central vacuole',380,420,400],['mito','Mitochondria',465,305,445],['cyto','Cytoplasm',550,430,520]],
+        R:[['ribo','Ribosomes',110,712,108],['nuc','Nucleus',200,683,172],['nucleolus','Nucleolus',290,640,158],['rer','Rough ER',380,660,246],['ser','Smooth ER',465,690,340],['golgi','Golgi body',550,672,452]]}
+};
+function arcPath(cx,cy,r,a0,a1){const p=a=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)];const[s,t]=[p(a0),p(a1)];return`M${s[0].toFixed(1)} ${s[1].toFixed(1)} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${t[0].toFixed(1)} ${t[1].toFixed(1)}`}
+function riboDots(cx,cy,r,a0,a1,step){let s='';for(let a=a0;a<=a1;a+=step){s+=`<circle cx="${(cx+(r+6)*Math.cos(a*Math.PI/180)).toFixed(1)}" cy="${(cy+(r+6)*Math.sin(a*Math.PI/180)).toFixed(1)}" r="3" fill="var(--ribo)"/>`}return s}
+function rer(cx,cy,radii,a0,a1){return radii.map(r=>`<path d="${arcPath(cx,cy,r,a0,a1)}" fill="none" stroke="var(--er)" stroke-width="9" stroke-linecap="round"/>`+riboDots(cx,cy,r,a0+4,a1-2,11)).join('')}
+function golgi(x,y){let s='';for(let i=0;i<4;i++){const w=78-i*8,yy=y-15+i*11;s+=`<path d="M${x-w/2} ${yy+6} Q${x} ${yy-8} ${x+w/2} ${yy+6}" fill="none" stroke="var(--gol)" stroke-width="7" stroke-linecap="round"/>`}return s+`<circle cx="${x+48}" cy="${y-14}" r="6" fill="var(--gol)"/><circle cx="${x-46}" cy="${y+24}" r="5" fill="var(--gol)"/>`}
+function mito(x,y,rot,rx=40,ry=19){return`<g transform="translate(${x} ${y}) rotate(${rot})"><ellipse rx="${rx}" ry="${ry}" fill="var(--mito)" stroke="#9c4a24" stroke-width="2"/><path d="M${-rx+10} 0 l8 -10 l8 18 l8 -18 l8 18 l8 -18 l8 18 l8 -10" fill="none" stroke="#9c4a24" stroke-width="2" transform="scale(${(rx-8)/40} 1)"/></g>`}
+function ser(x,y){return`<path d="M${x-40} ${y} q10 -18 20 0 t20 0 t20 0 t20 0 M${x-34} ${y+16} q10 -16 20 0 t20 0 t20 0" fill="none" stroke="var(--er)" stroke-width="7" stroke-linecap="round"/>`}
+function chloro(x,y,rot){let g='';for(let i=-2;i<=2;i++)g+=`<rect x="${i*13-5}" y="-8" width="10" height="16" rx="2" fill="#2e7d32"/>`;return`<g transform="translate(${x} ${y}) rotate(${rot})"><ellipse rx="42" ry="22" fill="var(--chl)" stroke="#2e7d32" stroke-width="2"/>${g}</g>`}
+function riboCluster(x,y,n){let s='',sd=n*7;for(let i=0;i<n;i++){sd=(sd*9301+49297)%233280;const a=sd/233280*6.28;sd=(sd*9301+49297)%233280;const r=6+sd/233280*22;s+=`<circle cx="${(x+r*Math.cos(a)).toFixed(1)}" cy="${(y+r*Math.sin(a)).toFixed(1)}" r="3" fill="var(--ribo)"/>`}return s}
+function animalArt(){return`<ellipse cx="500" cy="311" rx="262" ry="236" fill="var(--cyto)" stroke="var(--memb)" stroke-width="7"/>`
+ +rer(500,290,[98,113,128],-55,70)
+ +`<circle cx="500" cy="290" r="80" fill="var(--nuc)" stroke="var(--nuc2)" stroke-width="3"/><circle cx="500" cy="290" r="74" fill="none" stroke="var(--nuc2)" stroke-width="2" stroke-dasharray="40 9"/><circle cx="518" cy="284" r="24" fill="var(--nuc2)"/>`
+ +golgi(650,452)+mito(330,245,-20)+mito(560,480,12,34,16)+ser(430,456)
+ +`<circle cx="355" cy="345" r="17" fill="var(--lyso)" stroke="#3d5f99" stroke-width="2"/>${[[-6,-5],[5,-3],[-2,6],[7,6]].map(([a,b])=>`<circle cx="${355+a}" cy="${345+b}" r="2.2" fill="#3d5f99"/>`).join('')}`
+ +`<circle cx="700" cy="240" r="25" fill="var(--vac)" stroke="#5d8db3" stroke-width="2"/>`
+ +`<g fill="#8b6fbf" stroke="#4a2f80" stroke-width="1.5"><rect x="362" y="140" width="34" height="14" rx="5"/><rect x="398" y="132" width="14" height="34" rx="5"/></g>`
+ +riboCluster(650,150,14)+riboCluster(420,210,6)+riboCluster(600,395,6)+riboCluster(300,320,5)
+ +`<circle cx="602" cy="410" r="6" fill="var(--gol)"/><circle cx="458" cy="400" r="5" fill="var(--gol)"/>`}
+function plantArt(){return`<rect x="248" y="62" width="504" height="496" rx="26" fill="var(--cw)" stroke="#7a8f45" stroke-width="3"/><rect x="267" y="81" width="466" height="458" rx="16" fill="var(--cyto)" stroke="var(--memb)" stroke-width="6"/>`
+ +`<rect x="350" y="250" width="250" height="238" rx="56" fill="var(--vac)" stroke="#5d8db3" stroke-width="3"/>`
+ +rer(630,165,[70,82,94],40,140)
+ +`<circle cx="630" cy="165" r="55" fill="var(--nuc)" stroke="var(--nuc2)" stroke-width="3"/><circle cx="630" cy="165" r="50" fill="none" stroke="var(--nuc2)" stroke-width="2" stroke-dasharray="30 8"/><circle cx="640" cy="158" r="17" fill="var(--nuc2)"/>`
+ +chloro(322,180,-15)+chloro(470,140,8)+chloro(520,515,-6)+chloro(305,330,80)
+ +mito(305,445,75,30,14)+mito(700,395,80,26,12)+ser(690,340)+golgi(672,454)
+ +riboCluster(712,108,9)+riboCluster(400,515,5)}
+let cellType='animal';
+function buildCell(){
+ const C=CELLS[cellType],svg=$('cellSvg'),fig=$('cellFig');
+ let lines='';
+ const all=[...C.L.map(a=>[...a,'L']),...C.R.map(a=>[...a,'R'])];
+ for(const[id,,y,ax,ay,side]of all){const x0=side==='L'?212:788;lines+=`<line x1="${x0}" y1="${y}" x2="${ax}" y2="${ay}" stroke="var(--ink)" stroke-width="2"/><circle cx="${ax}" cy="${ay}" r="5" fill="var(--ink)"/>`}
+ svg.innerHTML=(cellType==='animal'?animalArt():plantArt())+lines;
+ fig.querySelectorAll('.slot').forEach(s=>s.remove());
+ all.forEach(([id,,y,,,side],i)=>{const s=document.createElement('div');s.className='slot';s.dataset.grp='cell';s.dataset.ans=id;s.dataset.n=i+1;
+  Object.assign(s.style,{left:(side==='L'?12:788)/10+'%',top:((y-23)/620*100)+'%',width:'20%',height:(46/620*100)+'%'});fig.appendChild(s)});
+ $('bank0').dataset.grp='cell';$('bank0').innerHTML='';
+ shuffle(all).forEach(([id,name])=>$('bank0').appendChild(chipEl(id,name,'cell','bank0')));
+ $('fb0').textContent='';
+}
+document.querySelectorAll('input[name=ct]').forEach(r=>r.addEventListener('change',()=>{cellType=r.value;buildCell()}));
+$('chk0').addEventListener('click',()=>check('cell','fb0',12,0,`All 12 correct! Now try the ${cellType==='animal'?'plant':'animal'} cell.`));
+$('rst0').addEventListener('click',buildCell);
+
+/* ---------------- 2. organelle jobs ---------------- */
+const COL={memb:'var(--memb)',cyto:'var(--cyto)',nuc:'var(--nuc)',nucleolus:'var(--nuc2)',ribo:'var(--ribo)',rer:'var(--er)',ser:'var(--er)',ves:'var(--gol)',golgi:'var(--gol)',mito:'var(--mito)',lyso:'var(--lyso)',centrioles:'#8b6fbf',chl:'var(--chl)',vac:'var(--vac)',wall:'var(--cw)'};
+const JOBS=[
+ [['memb','Cell membrane','Controls what enters and exits the cell.'],['cyto','Cytoplasm','"Cell jelly": holds the organelles. Many chemical reactions happen here.'],['nuc','Nucleus','Stores and protects the DNA, the instructions for making proteins.'],['nucleolus','Nucleolus','Sits inside the nucleus and makes ribosomes.'],['ribo','Ribosomes','Build proteins by joining amino acids.'],['rer','Rough ER','Covered in ribosomes. Carries proteins towards the Golgi.']],
+ [['ser','Smooth ER','No ribosomes. Makes lipids and hormones, and breaks down toxins.'],['ves','Vesicle','A small sac that holds and moves molecules around the cell.'],['golgi','Golgi body','Sorts, changes and packages proteins for delivery.'],['mito','Mitochondria','Cell respiration: breaks down glucose to release energy (ATP).'],['lyso','Lysosome','Full of digestive enzymes. Breaks down and recycles waste.'],['centrioles','Centrioles','Help organise cell division by making spindle fibres.']],
+ [['chl','Chloroplast','Photosynthesis: uses sunlight to make sugar. Green because of chlorophyll.'],['vac','Large central vacuole','Stores water and keeps the plant cell firm.'],['wall','Cell wall','A tough, rigid layer made of cellulose. Gives support and protection.'],['mito','Mitochondria','Releases energy (ATP) from sugar. Plant AND animal cells have them.']]
+];
+let jr=0;
+function buildMatch(rowsId,bankId,grp,items){
+ $(rowsId).innerHTML=items.map(([id,name])=>`<div class="mrow"><div class="nm"><i style="background:${COL[id]||'var(--prot)'}"></i>${name}</div><div class="mslot" data-grp="${grp}" data-ans="${id}"></div></div>`).join('');
+ const b=$(bankId);b.dataset.grp=grp;b.innerHTML='';shuffle(items).forEach(([id,,job])=>b.appendChild(chipEl(id,job,grp,bankId,true)));
+}
+function buildJobs(){buildMatch('rows1','bank1','job'+jr,JOBS[jr]);$('fb1').textContent=''}
+document.querySelectorAll('input[name=jr]').forEach(r=>r.addEventListener('change',()=>{jr=+r.value;buildJobs()}));
+const jobDone=[false,false,false];
+$('chk1').addEventListener('click',()=>{const n=JOBS[jr].length;const ok=check('job'+jr,'fb1',n,1,jr<2?`All ${n} correct! Go on to ${jr===0?'Round 2':'Plant parts'}.`:'All correct!');if(ok){jobDone[jr]=true;done[1]=jobDone.every(Boolean);drawTabs()}else{done[1]=jobDone.every(Boolean);drawTabs()}});
+$('rst1').addEventListener('click',buildJobs);
+
+/* ---------------- 3. protein route ---------------- */
+const STEPS=[['s0','Nucleus: the DNA instructions are copied into mRNA, which leaves through a pore.'],['s1','Ribosome: reads the mRNA and builds the protein from amino acids.'],['s2','Rough ER: carries the protein.'],['s3','Vesicle: moves the protein to the Golgi body.'],['s4','Golgi body: sorts, changes and packages the protein.'],['s5','Vesicle: carries the protein to the cell membrane.'],['s6','Cell membrane: the protein leaves the cell.']];
+const RPTS=[[150,185],[232,150],[300,205],[372,236],[458,250],[560,300],[640,320],[705,320]];
+function routeArt(){
+ let s=`<rect x="0" y="0" width="720" height="470" fill="var(--cyto)"/><path d="M640 0 C 625 120 655 330 640 470" fill="none" stroke="var(--memb)" stroke-width="9"/><rect x="646" y="0" width="74" height="470" fill="var(--wall)"/><path d="M646 0 C 631 120 661 330 646 470 L720 470 L720 0Z" fill="var(--wall)"/><text x="682" y="40" text-anchor="middle" font-size="15" fill="var(--muted)">outside</text>`;
+ s+=`<circle cx="110" cy="200" r="100" fill="var(--nuc)" stroke="var(--nuc2)" stroke-width="3"/><circle cx="110" cy="200" r="93" fill="none" stroke="var(--nuc2)" stroke-width="2" stroke-dasharray="50 10"/><circle cx="95" cy="215" r="28" fill="var(--nuc2)"/><path d="M60 160 q15 -10 30 0 t30 0 t30 0" fill="none" stroke="#e05a9c" stroke-width="4"/>`;
+ s+=rer(110,200,[122,138,154],-35,55);
+ s+=golgi(470,262).replace(/stroke-width="7"/g,'stroke-width="9"');
+ s+=`<g id="sv"><circle cx="375" cy="236" r="15" fill="var(--gol)" stroke="#9c5a1c" stroke-width="2"/><circle cx="565" cy="305" r="15" fill="var(--gol)" stroke="#9c5a1c" stroke-width="2"/></g>`;
+ const lab=[['Nucleus',60,330],['Ribosomes on',232,96],['rough ER',232,114],['Vesicle',375,205],['Golgi body',470,212],['Vesicle',565,372],['Cell membrane',575,450]];
+ s+=lab.map(([t,x,y])=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="17" font-weight="600" fill="var(--ink)" style="paint-order:stroke;stroke:var(--cyto);stroke-width:5px">${t}</text>`).join('');
+ s+=`<g id="nums" opacity="0">${[[232,150],[300,205],[375,236],[470,262],[565,305],[640,320]].map(([x,y],i)=>`<g><circle cx="${x}" cy="${y+32}" r="14" fill="var(--band)"/><text x="${x}" y="${y+37}" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">${i+1}</text></g>`).join('')}</g>`;
+ s+=`<g id="sim"></g>`;
+ return s;
+}
+function buildRoute(){
+ $('routeSvg').innerHTML=routeArt();
+ $('route').innerHTML=STEPS.map((s,i)=>`<div class="rstep"><b>${i+1}</b><div class="mslot" data-grp="route" data-ans="${s[0]}"></div></div>`).join('');
+ const b=$('bank2');b.dataset.grp='route';b.innerHTML='';shuffle(STEPS).forEach(([id,t])=>b.appendChild(chipEl(id,t,'route','bank2',false)));
+ $('fb2').textContent='';
+}
+/* protein-building simulation, shown once the order is right */
+const SIM={on:false,stage:0,t:0,playing:false,raf:0,last:0};
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SDUR=[3,5,4,3.2,4,3,3.5];
+const CAP=[
+ '<b>Step 1. Nucleus:</b> the DNA instructions stay safe in the nucleus. A copy called <b>mRNA</b> is made, and it leaves through a nuclear pore to a ribosome.',
+ '<b>Step 2. Ribosome:</b> reads the mRNA and joins <b>amino acids</b> together, one by one, into a long chain. This chain is the protein.',
+ '<b>Step 3. Rough ER:</b> the chain moves through the channels of the rough ER and <b>folds</b> into its 3D shape.',
+ '<b>Step 4. Vesicle:</b> a small bubble of membrane pinches off the ER and carries the protein to the Golgi body.',
+ '<b>Step 5. Golgi body:</b> sorts and changes the protein (here it gets a <b>sugar tag</b>), then packages it into a new vesicle.',
+ '<b>Step 6. Vesicle:</b> carries the packaged protein across the cytoplasm to the cell membrane.',
+ '<b>Step 7. Cell membrane:</b> the vesicle joins the membrane and the protein is <b>released outside</b> the cell. Antibodies leave plasma cells this way.'
+];
+const AC=['#e0457b','#3f8fd9','#f2a541','#4caf50','#8e5bd6'];
+const lerp=(a,b,t)=>a+(b-a)*t, ease=t=>t<.5?2*t*t:1-(-2*t+2)**2/2, cl=t=>Math.max(0,Math.min(1,t));
+function along(pts,t){let L=0;const d=[];for(let i=1;i<pts.length;i++){d.push(Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));L+=d[i-1]}let k=t*L,i=0;while(i<d.length-1&&k>d[i]){k-=d[i];i++}const f=d[i]?k/d[i]:0;return[lerp(pts[i][0],pts[i+1][0],f),lerp(pts[i][1],pts[i+1][1],f)]}
+const mrna=(x,y,o=1)=>`<path d="M${x-22} ${y} q5.5 -8 11 0 t11 0 t11 0 t11 0" fill="none" stroke="#e05a9c" stroke-width="4" stroke-linecap="round" opacity="${o}"/>`;
+const ribo=(x,y,s=1.3)=>`<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="-7" rx="15" ry="10" fill="var(--ribo)"/><ellipse cx="0" cy="8" rx="11" ry="6" fill="var(--ribo)" opacity=".85"/></g>`;
+const bead=(x,y,i,r=5.5)=>`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${AC[i%5]}" stroke="#fff" stroke-width="1.2"/>`;
+const arcPt=a=>[110+146*Math.cos(a*Math.PI/180),200+146*Math.sin(a*Math.PI/180)];
+const FOLD=Array.from({length:9},(_,k)=>{const a=k*2.4,r=3+k*1.3;return[r*Math.cos(a),r*Math.sin(a)]});
+function folded(x,y,sc=1,tag=0){let g=FOLD.map(([dx,dy],k)=>bead(x+dx*sc,y+dy*sc,k,4.2*sc)).join('');if(tag>0)g+=`<g opacity="${tag}"><line x1="${x}" y1="${y-12*sc}" x2="${x}" y2="${y-20*sc}" stroke="#1f5f9a" stroke-width="2"/><polygon points="${x-6},${y-24*sc} ${x-3},${y-29*sc} ${x+3},${y-29*sc} ${x+6},${y-24*sc} ${x+3},${y-19*sc} ${x-3},${y-19*sc}" fill="var(--sug)" stroke="#1f5f9a" stroke-width="1"/></g>`;return g}
+const ves=(x,y,r,inner='')=>`<circle cx="${x}" cy="${y}" r="${r}" fill="color-mix(in srgb,var(--gol) 45%,transparent)" stroke="#9c5a1c" stroke-width="2"/>`+inner;
+const R=[258,176],E=arcPt(42),G=[468,262],G2=[528,292],M=[634,318],O=[688,318];
+function simFrame(){
+ const st=SIM.stage,t=cl(SIM.t/SDUR[st]);let g='';
+ if(st===0){const p=along([[75,170],[150,165],[205,168],[R[0]-4,R[1]]],ease(t));g+=`<circle cx="205" cy="168" r="10" fill="none" stroke="#e05a9c" stroke-width="2" stroke-dasharray="3 3" opacity="${t<.7?1:0}"/>`+mrna(p[0],p[1])+(t>.75?ribo(R[0],R[1],1.3*cl((t-.75)*4)):'')}
+ if(st===1){const n=Math.min(9,Math.floor(t*10));g+=mrna(R[0]+lerp(-12,22,t),R[1]+6,.9)+ribo(R[0],R[1]);
+  for(let k=0;k<n;k++){const[a,b]=arcPt(-4+(n-1-k)*5.5);g+=bead(a,b,k)}
+  if(n<9){const f=(t*10)%1,from=[R[0]+70,R[1]-70+((n*37)%40)];g+=bead(lerp(from[0],R[0]+4,ease(f)),lerp(from[1],R[1]-6,ease(f)),n)+`<text x="${R[0]+52}" y="${R[1]-80}" font-size="14" fill="var(--muted)">amino acids</text>`}}
+ if(st===2){const sh=ease(cl(t/.55))*16,fold=ease(cl((t-.5)/.5));g+=ribo(R[0],R[1]).replace('<g ','<g opacity=".5" ');
+  for(let k=0;k<9;k++){const c=arcPt(-4+(8-k)*5.5+sh*(1+k*.15));const x=lerp(c[0],E[0]+FOLD[k][0],fold),y=lerp(c[1],E[1]+FOLD[k][1],fold);g+=bead(x,y,k,lerp(5.5,4.2,fold))}}
+ if(st===3){const grow=cl(t/.25),mv=ease(cl((t-.25)/.75));const p=along([E,[330,320],[400,300],G],mv);g+=ves(p[0],p[1],14*grow,folded(p[0],p[1],.9))}
+ if(st===4){const merge=cl(t/.3),tag=cl((t-.3)/.3),bud=ease(cl((t-.6)/.4));g+=`<circle cx="${G[0]}" cy="${G[1]}" r="${46}" fill="var(--gol)" opacity="${.18+.12*Math.sin(t*12)}"/>`;
+  if(merge<1)g+=ves(G[0],G[1],14*(1-merge));const p=[lerp(G[0],G2[0],bud),lerp(G[1],G2[1],bud)];if(bud>0)g+=ves(G2[0],G2[1],14*bud);g+=folded(p[0],p[1],.9,tag)}
+ if(st===5){const p=along([G2,[580,300],M],ease(t));g+=ves(p[0],p[1],14,folded(p[0],p[1],.9,1))}
+ if(st===6){const fuse=cl(t/.45),out=ease(cl((t-.4)/.6));if(fuse<1)g+=ves(M[0]+fuse*4,M[1],14*(1-fuse));if(fuse>.3)g+=`<path d="M${M[0]+2} ${M[1]-16*fuse} q8 ${16*fuse} 0 ${32*fuse}" fill="none" stroke="var(--wall)" stroke-width="7"/>`;
+  const x=lerp(M[0],O[0],out);g+=folded(x,M[1],.9,1);if(t>.8)g+=`<text x="${O[0]-4}" y="${M[1]+42}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--pink)">Released!</text>`}
+ $('sim').innerHTML=g;
+ $('simCap').innerHTML=CAP[st];
+ document.querySelectorAll('#route .rstep').forEach((r,i)=>r.classList.toggle('now',st===i));
+ $('simPlay').textContent=SIM.playing?'Pause':(st===6&&SIM.t>=SDUR[6]?'Play again':'Play');
+ $('simBack').disabled=st===0;$('simNext').disabled=st===6;
+}
+function simTick(now){if(!SIM.on)return;const dt=Math.min(.05,(now-SIM.last)/1000);SIM.last=now;
+ if(SIM.playing){SIM.t+=dt;if(SIM.t>=SDUR[SIM.stage]){if(SIM.stage<6){SIM.stage++;SIM.t=0}else{SIM.t=SDUR[6];SIM.playing=false}}}
+ simFrame();SIM.raf=requestAnimationFrame(simTick)}
+function simGo(stage){SIM.stage=Math.max(0,Math.min(6,stage));SIM.t=RM?SDUR[SIM.stage]:0;simFrame()}
+function startSim(){SIM.on=true;$('bankPanel2').hidden=true;$('simCtl').hidden=false;$('nums').setAttribute('opacity',0);$('sv').setAttribute('opacity',.3);
+ SIM.playing=!RM;simGo(0);SIM.last=performance.now();cancelAnimationFrame(SIM.raf);SIM.raf=requestAnimationFrame(simTick)}
+function stopSim(){SIM.on=false;cancelAnimationFrame(SIM.raf);$('simCtl').hidden=true;$('bankPanel2').hidden=false}
+$('simPlay').addEventListener('click',()=>{if(SIM.stage===6&&SIM.t>=SDUR[6]&&!SIM.playing){simGo(0);SIM.playing=!RM;return}SIM.playing=!SIM.playing;if(RM&&SIM.playing){SIM.playing=false;simGo(SIM.stage+1)}simFrame()});
+$('simNext').addEventListener('click',()=>simGo(SIM.stage+1));
+$('simBack').addEventListener('click',()=>simGo(SIM.stage-1));
+$('simReplay').addEventListener('click',()=>{simGo(0);SIM.playing=!RM});
+$('chk2').addEventListener('click',()=>{if(check('route','fb2',7,2,'Correct order! Now watch the protein being built, step by step.'))startSim()});
+$('rst2').addEventListener('click',()=>{stopSim();buildRoute()});
+
+/* ---------------- 4. label the membrane ---------------- */
+const MEM={top:[['head','Phospholipid head',125,118,262],['receptor','Receptor protein',365,450,188],['glycoprotein','Glycoprotein',615,735,150],['glycolipid','Glycolipid',865,872,190]],
+           bot:[['transport','Transport protein',125,215,438],['chol','Cholesterol',365,330,333],['tails','Phospholipid tails',615,548,346],['bilayer','Phospholipid bilayer',865,958,330]]};
+function lipid(x,top){const hy=top?272:388,ty=top?286:374,dir=top?1:-1;return`<path d="M${x-4} ${ty} q-3 ${dir*20} 1 ${dir*42} M${x+4} ${ty} q3 ${dir*20} -1 ${dir*42}" fill="none" stroke="var(--tail)" stroke-width="3.5" stroke-linecap="round"/><circle cx="${x}" cy="${hy}" r="11" fill="var(--head)"/>`}
+function cholMol(x,y){return`<g transform="translate(${x-14} ${y-9})"><polygon points="0,9 4,2 11,2 14,9 11,16 4,16" fill="var(--chol)" stroke="#8a6a00" stroke-width="1.2"/><polygon points="14,9 18,2 25,2 28,9 25,16 18,16" fill="var(--chol)" stroke="#8a6a00" stroke-width="1.2"/></g>`}
+function sugars(x,y,n,dx=0){let s='';for(let i=0;i<n;i++){const cx=x+(i%2?dx:-dx)*.5,cy=y-i*20;s+=`<polygon points="${cx-8},${cy} ${cx-4},${cy-7} ${cx+4},${cy-7} ${cx+8},${cy} ${cx+4},${cy+7} ${cx-4},${cy+7}" fill="var(--sug)" stroke="#1f5f9a" stroke-width="1.2"/>`+(i<n-1?`<line x1="${cx}" y1="${cy-7}" x2="${x+(i%2?-dx:dx)*.5}" y2="${cy-13}" stroke="#1f5f9a" stroke-width="2"/>`:'')}return s}
+function membraneArt(){
+ let s=`<rect x="0" y="0" width="1000" height="250" fill="var(--wall)"/><rect x="0" y="410" width="1000" height="210" fill="var(--cyto)"/><text x="268" y="236" font-size="15" fill="var(--muted)">Outside the cell (watery)</text><text x="268" y="430" font-size="15" fill="var(--muted)">Inside the cell (cytoplasm)</text>`;
+ const skip=x=>Math.abs(x-215)<38||Math.abs(x-450)<34||Math.abs(x-735)<36;
+ for(let x=40;x<=945;x+=26){if(skip(x))continue;s+=lipid(x,true)+lipid(x,false)}
+ s+=sugars(872,246,4,10);
+ s+=cholMol(330,333)+cholMol(610,330);
+ s+=`<rect x="190" y="238" width="50" height="204" rx="22" fill="var(--prot)" stroke="#2f6b65" stroke-width="2"/><rect x="207" y="240" width="16" height="200" rx="6" fill="var(--wall)"/><path d="M215 255 v170" stroke="var(--sug)" stroke-width="2" stroke-dasharray="3 6"/>`;
+ s+=`<path d="M425 205 Q430 190 440 196 L440 240 L460 240 L460 196 Q470 190 475 205 L478 440 L422 440Z" fill="var(--prot)" stroke="#2f6b65" stroke-width="2"/><path d="M432 200 Q450 225 468 200" fill="none" stroke="#2f6b65" stroke-width="2"/>`;
+ s+=`<rect x="710" y="225" width="50" height="215" rx="24" fill="var(--prot)" stroke="#2f6b65" stroke-width="2"/>`+sugars(735,222,4,12);
+ s+=`<path d="M958 262 h10 v136 h-10" fill="none" stroke="var(--ink)" stroke-width="3"/>`;
+ let lines='';
+ for(const[id,,sx,ax,ay]of MEM.top)lines+=`<line x1="${sx}" y1="78" x2="${ax}" y2="${ay}" stroke="var(--ink)" stroke-width="2"/><circle cx="${ax}" cy="${ay}" r="5" fill="var(--ink)"/>`;
+ for(const[id,,sx,ax,ay]of MEM.bot)lines+=`<line x1="${sx}" y1="540" x2="${ax}" y2="${ay}" stroke="var(--ink)" stroke-width="2"/><circle cx="${ax}" cy="${ay}" r="5" fill="var(--ink)"/>`;
+ return s+lines;
+}
+function buildMem(){
+ $('memSvg').innerHTML=membraneArt();const fig=$('memFig');fig.querySelectorAll('.slot').forEach(s=>s.remove());
+ const all=[...MEM.top.map(a=>[...a,30]),...MEM.bot.map(a=>[...a,542])];
+ all.forEach(([id,,sx,,,y],i)=>{const s=document.createElement('div');s.className='slot';s.dataset.grp='mem';s.dataset.ans=id;s.dataset.n=i+1;Object.assign(s.style,{left:((sx-110)/10)+'%',top:(y/620*100)+'%',width:'22%',height:(46/620*100)+'%'});fig.appendChild(s)});
+ const b=$('bank3');b.dataset.grp='mem';b.innerHTML='';shuffle(all).forEach(([id,name])=>b.appendChild(chipEl(id,name,'mem','bank3')));$('fb3').textContent='';
+}
+$('chk3').addEventListener('click',()=>check('mem','fb3',8,3));
+$('rst3').addEventListener('click',buildMem);
+
+/* ---------------- 5. membrane jobs ---------------- */
+const MJOBS=[['head','Phospholipid head','Hydrophilic (water-loving). Faces the water on both sides.'],['tails','Phospholipid tails','Hydrophobic (water-fearing). Hide in the middle, away from water.'],['bilayer','Phospholipid bilayer','Two layers that make a barrier around the cell.'],['chol','Cholesterol','Keeps the membrane stable: flexible in the cold, firm in the heat.'],['transport','Transport protein','Moves molecules in and out of the cell.'],['receptor','Receptor protein','Receives messages from outside the cell (cell signalling).'],['glycoprotein','Glycoprotein','A protein with a sugar chain: a name tag for cell recognition.'],['glycolipid','Glycolipid','A lipid with a sugar chain attached: also helps cells recognise each other.']];
+Object.assign(COL,{head:'var(--head)',tails:'var(--tail)',bilayer:'var(--lip)',chol:'var(--chol)',transport:'var(--prot)',receptor:'var(--prot)',glycoprotein:'var(--sug)',glycolipid:'var(--sug)'});
+function buildMJobs(){buildMatch('rows4','bank4','mjob',MJOBS);$('fb4').textContent=''}
+$('chk4').addEventListener('click',()=>check('mjob','fb4',8,4));
+$('rst4').addEventListener('click',buildMJobs);
+
+/* ---------------- 6. cholesterol lab ---------------- */
+const cv=$('cv'),ctx=cv.getContext('2d'),lf=$('labfig');
+const N=26,MAXC=14,TEFF={cold:.1,body:.95,hot:1.12};
+let chol=[],temp='body',f=.95,brk=0,crack=0,bend={x:.5,a:0,held:false},leaked=0,parts=[],labOn=false,lastT=0,W=0,H=0,dpr=1;
+const phase=Array.from({length:2*N},(_,i)=>({p:Math.random()*6.28,s:.6+Math.random()*.9,d:0}));
+const ORDER=(()=>{const o=[],used=new Set();const pick=(fr)=>{let i=Math.round(fr*(N-2));while(used.has(i))i=(i+1)%(N-1);used.add(i);return i};[.5,.25,.75,.12,.38,.62,.88,.06,.31,.56,.81,.19,.44,.69].forEach((fr,k)=>o.push({i:pick(fr),top:k%2===0}));return o})();
+function sizeCv(){dpr=window.devicePixelRatio||1;W=lf.clientWidth;H=lf.clientHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+new ResizeObserver(()=>{sizeCv();if(!labOn)drawLab(0)}).observe(lf);
+function initParts(){parts=Array.from({length:36},()=>({x:Math.random(),y:Math.random()*.3+.03,vx:0,vy:0,inside:false}))}
+initParts();
+function fluid(){const cn=chol.length/MAXC,T=TEFF[temp],buf=Math.min(1,cn/.43),rig=Math.max(0,cn-.5)*1.15;return Math.max(0,Math.min(1.1,.55+(T-.55)*(1-buf)-rig))}
+function zone(v){return v>.9?'break':v>.72?'leak':v>=.35?'good':v>=.18?'stiff':'rigid'}
+const MSG={break:['bad','Breaking apart! Too runny: the parts slide away from each other and the membrane falls to pieces. Add cholesterol.'],leak:['warn','Leaking: too runny. Gaps open between the phospholipids and molecules get in. Add a little more cholesterol.'],good:['ok','Just right: fluid enough to bend and move, but no leaks. Try bending it.'],stiff:['warn','Getting stiff: the parts are packed tight and hardly move. It does not bend easily.'],rigid:['bad','Too rigid: it has lost its flexibility. Try bending it: it cracks instead of bending.']};
+function midY(x){const cx=bend.x*W,w=Math.max(60,W*.12);return H*.56+bend.a*Math.exp(-((x-cx)**2)/(2*w*w))}
+function drawLab(dt){
+ if(!W)return;f+=(fluid()-f)*Math.min(1,dt*3);const z=zone(f);
+ if(z==='break')brk=Math.min(1,brk+dt*.35);else brk=Math.max(0,brk-dt*.25);
+ const maxBend=H*.32*Math.min(1,Math.max(.08,(f-.1)/.35));
+ if(!bend.held)bend.a*=Math.pow(.02,dt);
+ if(crack>0&&z!=='rigid'&&z!=='stiff')crack=Math.max(0,crack-dt*.5);
+ ctx.clearRect(0,0,W,H);
+ const th=document.documentElement.dataset.theme,dk=th?th==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+ const C=dk?{wall:'#14111d',cyto:'#3a2232',head:'#b9a2ff',tail:'#c8963c',chol:'#f2c230',mut:'#aaa2bf'}:{wall:'#fbfaff',cyto:'#fde8ef',head:'#6b4fc0',tail:'#e5b65a',chol:'#f2c230',mut:'#5b5470'};
+ ctx.fillStyle=C.wall;ctx.fillRect(0,0,W,H);ctx.fillStyle=C.cyto;ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=W;x+=10)ctx.lineTo(x,midY(x)+34);ctx.lineTo(W,H);ctx.fill();
+ ctx.font='14px Lexend, sans-serif';ctx.fillStyle=C.mut;ctx.fillText('Outside the cell',12,22);ctx.fillText('Inside the cell',12,H-12);
+ const sp=W/(N+.5),amp=Math.max(0,f-.15)*sp*.55,t=performance.now()/1000,frag=brk;
+ const lipX=[];
+ for(let L=0;L<2;L++)for(let i=0;i<N;i++){const ph=phase[L*N+i];if(z==='leak'||z==='break')ph.d+=(Math.random()-.5)*dt*f*30;ph.d*=Math.pow(.6,dt);let x=sp*(i+.75)+Math.sin(t*ph.s*(1+f*2)+ph.p)*amp+ph.d;
+  const g=Math.floor(i/5);x+=frag*(g-2.5)*sp*.9;lipX.push(x);const yoff=frag*Math.sin(g*1.7+L)*H*.12;
+  let y=midY(x)+yoff;if(crack>0&&Math.abs(x-bend.x*W)<sp*.8)y+=(x<bend.x*W?-1:1)*crack*6;
+  const top=L===0,hy=top?y-34:y+34,dir=top?1:-1,tilt=Math.sin(t*ph.s*1.3+ph.p)*f*5;
+  ctx.strokeStyle=C.tail;ctx.lineWidth=3;ctx.lineCap='round';
+  for(const o of[-3.5,3.5]){ctx.beginPath();ctx.moveTo(x+o,hy+dir*8);ctx.quadraticCurveTo(x+o+tilt,hy+dir*20,x+o*.4+tilt,hy+dir*32);ctx.stroke()}
+  ctx.fillStyle=C.head;ctx.beginPath();ctx.arc(x,hy,8.5,0,6.29);ctx.fill();}
+ for(const m of chol){const L=m.top?0:1,x=(lipX[L*N+m.i]+lipX[L*N+m.i+1])/2,y=midY(x)+(m.top?-15:15)+frag*Math.sin(Math.floor(m.i/5)*1.7+L)*H*.12;ctx.fillStyle=C.chol;ctx.strokeStyle='#8a6a00';ctx.lineWidth=1;for(const dx of[-6,6]){ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3;ctx.lineTo(x+dx+6*Math.cos(a),y+6*Math.sin(a))}ctx.closePath();ctx.fill();ctx.stroke()}}
+ if(crack>.05){const cx=bend.x*W,y=midY(cx);ctx.strokeStyle='#c62828';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-4,y-46);for(let k=0;k<6;k++)ctx.lineTo(cx+(k%2?7:-7)*crack,y-46+k*18);ctx.stroke()}
+ // leaking molecules
+ const open=z==='leak'?(f-.72)*2.2:z==='break'?1:0,crk=crack>.3?.8:0;
+ for(const p of parts){p.vx+=(Math.random()-.5)*dt*3;p.vy+=(Math.random()-.5)*dt*3+(p.inside?0:dt*.5);p.vx*=Math.pow(.2,dt);p.vy*=Math.pow(.2,dt);p.x+=p.vx*dt*.6;p.y+=p.vy*dt*.6;
+  if(p.x<0||p.x>1)p.vx*=-1,p.x=Math.min(1,Math.max(0,p.x));
+  const my=midY(p.x*W)/H;
+  if(!p.inside){if(p.y>my-.12){const near=Math.abs(p.x-bend.x)<.06;if(Math.random()<(open*dt*4)+(near?crk*dt*6:0)){p.inside=true;p.y=my+.14;leaked++}else{p.y=my-.12;p.vy=-Math.abs(p.vy)}}if(p.y<.02){p.y=.02;p.vy=Math.abs(p.vy)}}
+  else{if(p.y<my+.12){p.y=my+.12;p.vy=Math.abs(p.vy)}if(p.y>.97){p.y=.97;p.vy=-Math.abs(p.vy)}}
+  ctx.fillStyle=p.inside?'#d23f78':'#3f8fd9';ctx.beginPath();ctx.arc(p.x*W,p.y*H,4.5,0,6.29);ctx.fill()}
+ // UI
+ $('mk').style.left=Math.min(100,f/1.1*100)+'%';
+ $('leak').textContent=leaked;
+ const zz=crack>.3?'rigid':z,[cl,tx]=MSG[zz];const s=$('cStatus');s.className=cl;const msg=crack>.3?'Cracked! The membrane was too stiff to bend, so it cracked and molecules leaked in.':tx;if(s.textContent!==msg)s.textContent=msg;
+ bend.max=maxBend;
+}
+// meter direction: left = too stiff (f low) ... right = too runny
+function loop(now){if(!labOn)return;const dt=Math.min(.05,(now-lastT)/1000||0);lastT=now;drawLab(dt);requestAnimationFrame(loop)}
+function labStart(){if(labOn)return;labOn=true;sizeCv();lastT=performance.now();requestAnimationFrame(loop);
+ const obs=new MutationObserver(()=>{if($('v5').hidden){labOn=false;obs.disconnect()}});obs.observe($('v5'),{attributes:true})}
+function setChol(n){n=Math.max(0,Math.min(MAXC,n));chol=ORDER.slice(0,n);$('cNum').textContent=n;doneLab()}
+$('cPlus').addEventListener('click',()=>setChol(chol.length+1));
+$('cMinus').addEventListener('click',()=>setChol(chol.length-1));
+document.querySelectorAll('input[name=tp]').forEach(r=>r.addEventListener('change',()=>{temp=r.value}));
+// bend by dragging on the membrane
+let bp=null;
+lf.addEventListener('pointerdown',e=>{const r=lf.getBoundingClientRect();bp={y0:e.clientY,a0:bend.a,id:e.pointerId};bend.x=(e.clientX-r.left)/r.width;bend.held=true;lf.setPointerCapture(e.pointerId)});
+lf.addEventListener('pointermove',e=>{if(!bp||e.pointerId!==bp.id)return;const raw=bp.a0+(e.clientY-bp.y0);const mx=bend.max||60;bend.a=Math.max(-mx,Math.min(mx,raw));if(Math.abs(raw)>mx+40&&zone(f)!=='good'&&f<.35)crack=1});
+const upB=()=>{bp=null;bend.held=false};lf.addEventListener('pointerup',upB);lf.addEventListener('pointercancel',upB);
+// drag a cholesterol from the tray
+const tray=$('tray');let tg=null;
+tray.addEventListener('pointerdown',e=>{e.preventDefault();tg=tray.querySelector('svg').cloneNode(true);tg.classList.add('ghost');tg.style.width='46px';tg.style.height='30px';tg.style.left=e.clientX+'px';tg.style.top=e.clientY+'px';document.body.appendChild(tg);tray.setPointerCapture(e.pointerId)});
+tray.addEventListener('pointermove',e=>{if(!tg)return;tg.style.left=e.clientX+'px';tg.style.top=e.clientY+'px'});
+tray.addEventListener('pointerup',e=>{if(!tg)return;tg.remove();tg=null;const r=lf.getBoundingClientRect();
+ const inside=e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;const fb=$('cStatus');
+ if(!inside)return;if(chol.length>=MAXC){fb.textContent='The membrane is full of cholesterol!';return}
+ const sp=r.width/(N+.5),i=Math.max(0,Math.min(N-2,Math.round((e.clientX-r.left)/sp-1.25))),top=(e.clientY-r.top)<midY(e.clientX-r.left);
+ let k=ORDER.findIndex(o=>!chol.includes(o)&&o.i===i&&o.top===top);if(k<0)k=ORDER.findIndex(o=>!chol.includes(o));
+ const pick=ORDER[k];ORDER.splice(k,1);ORDER.splice(chol.length,0,pick);chol=ORDER.slice(0,chol.length+1);$('cNum').textContent=chol.length;doneLab()});
+tray.addEventListener('pointercancel',()=>{if(tg){tg.remove();tg=null}});
+// quick check
+const QZ=[
+ ['With NO cholesterol at body temperature, the membrane…',['becomes stiff and cracks','leaks and breaks apart','stays exactly the same'],1,'Without cholesterol it is too runny, so gaps open and it falls apart.'],
+ ['When you add LOTS of cholesterol, the membrane…',['becomes stiff and loses its flexibility','becomes more runny','lets more molecules in'],0,'Too much cholesterol packs the parts tightly, so it cannot bend.'],
+ ['Set it to Cold with no cholesterol. What does cholesterol do on a cold day?',['makes it even stiffer','keeps it flexible so it does not crack','breaks it down'],1,'Cholesterol keeps the membrane flexible in the cold and firm in the heat.'],
+ ['Why is the membrane called FLUID?',['it is a liquid that pours','its parts are not stuck in place and can move around','it is full of water'],1,'Fluid means the parts can move and re-form, like a soap bubble.']
+];
+let qi=0,qRight=0;
+function drawQuiz(){const q=$('quiz');if(qi>=QZ.length){q.innerHTML=`<h3>Quick check done</h3><p class="fb ${qRight===QZ.length?'good':''}">You got ${qRight} of ${QZ.length} first time.</p><button class="b" id="qAgain">Try again</button>`;$('qAgain').onclick=()=>{qi=0;qRight=0;drawQuiz()};done[5]=qRight>=3;drawTabs();return}
+ const[t,o]=QZ[qi];q.innerHTML=`<h3>Quick check ${qi+1} of ${QZ.length}</h3><p class="q">${t}</p><div class="opts">${o.map((x,i)=>`<button data-i="${i}">${x}</button>`).join('')}</div><p class="fb" id="qfb" style="margin-top:6px"></p>`;
+ let first=true;q.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,ok=i===QZ[qi][2];b.classList.add(ok?'right':'wrong');const fb=$('qfb');fb.className='fb '+(ok?'good':'try');fb.textContent=(ok?'Correct! ':'Not quite. ')+QZ[qi][3];if(ok){if(first)qRight++;q.querySelectorAll('.opts button').forEach(x=>x.disabled=true);setTimeout(()=>{qi++;drawQuiz()},1800)}first=false})}
+function doneLab(){}
+/* ---------------- start ---------------- */
+drawTabs();buildCell();buildJobs();buildRoute();buildMem();buildMJobs();drawQuiz();setChol(6);f=.55;fitAll();
+}
+</script>
+</body>
+</html>
